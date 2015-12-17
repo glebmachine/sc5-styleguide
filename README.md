@@ -11,6 +11,7 @@ using KSS notation. It can be used as a command line utility, gulp task or Grunt
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Usage](#usage)
+  - [Prerequisites](#prerequisites)
   - [As a command line tool](#as-a-command-line-tool)
   - [With gulp](#with-gulp)
   - [With Grunt](#with-grunt)
@@ -34,10 +35,18 @@ using KSS notation. It can be used as a command line utility, gulp task or Grunt
 
 ## Usage
 
+
 You should familiarize yourself with both [KSS](https://github.com/kneath/kss)
 and [node-kss](https://github.com/kss-node/kss-node) to get yourself started.
 
 SC5 Style guide provides additions to KSS syntax which you can learn [below](#user-content-documenting-syntax).
+
+### Prerequisites
+
+The tool should be installed onto:
+
+- node 0.12.x
+- node 4.2.x
 
 ### As a command line tool
 
@@ -190,6 +199,16 @@ This string is used as a page title and in the page header
 **extraHead** (array or string, optional)
 
 These HTML elements are injected inside the style guide head-tag.
+
+<a name="option-beforeBody"></a>
+**beforeBody** (array or string, optional)
+
+These HTML elements are injected inside the style guide `<body>` tag, before any other content.
+
+<a name="option-afterBody"></a>
+**afterBody** (array or string, optional)
+
+These HTML elements are injected inside the style guide `<body>` tag, after any other content.
 
 <a name="option-commonClass"></a>
 **commonClass** (string or array of strings, optional)
@@ -477,7 +496,7 @@ In the markup you can insert markup of the other sections by referring to its se
 // List item
 //
 // markup:
-// <li>Item<li>
+// <li>Item</li>
 //
 // Styleguide 1.2.1
 ```

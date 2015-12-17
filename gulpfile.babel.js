@@ -1,4 +1,5 @@
 var gulp = require('gulp'),
+    gutil = require('gulp-util'),
     concat = require('gulp-concat'),
     plumber = require('gulp-plumber'),
     bower = require('gulp-bower'),
@@ -8,6 +9,10 @@ var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     toc = require('gulp-doctoc'),
     styleguide = require('./lib/styleguide'),
+    sass = require('gulp-sass'),
+    please = require('gulp-pleeease'),
+    neat = require('node-neat'),
+    rimraf = require('gulp-rimraf'),
     distPath = 'lib/dist',
     fs = require('fs'),
     chalk = require('chalk'),
@@ -39,7 +44,7 @@ gulp.task('bower', () => {
   return bower();
 });
 
-gulp.task('sass', () => {
+gulp.task('copy:sass', () => {
   return gulp.src('lib/app/sass/**/*')
     .pipe(gulp.dest(distPath + '/sass'));
 });
@@ -52,6 +57,11 @@ gulp.task('html', () => {
 gulp.task('assets', () => {
   return gulp.src('lib/app/assets/**')
     .pipe(gulp.dest(distPath + '/assets'));
+});
+
+gulp.task('clean:dist', function () {
+  return gulp.src(distPath, {read: false})
+    .pipe(rimraf());
 });
 
 // Copy test directives to output even when running gulp dev
@@ -86,17 +96,23 @@ gulp.task('dev:applystyles', () => {
     process.exit(1);
     return 1;
   }
-  return gulp.src([distPath + '/css/*.css'])
+  return gulp.src([distPath + '/sass/*.scss'])
+    .pipe(sass({
+        includePaths: neat.includePaths
+    }))
+    .pipe(please({
+        minifier: false
+    }))
     .pipe(styleguide.applyStyles())
     .pipe(gulp.dest(outputPath));
 });
 
-gulp.task('dev', ['dev:doc', 'dev:static', 'dev:applystyles', 'dev:generate'], () => {
+gulp.task('dev', ['dev:doc', 'dev:static', 'dev:applystyles' ], () => {
   // Do intial full build and create styleguide
-  runSequence('build', 'dev:generate');
+  runSequence('build:dist', 'dev:generate');
 
   gulp.watch('lib/app/sass/**/*.scss', () => {
-    runSequence('sass', 'dev:applystyles', 'dev:generate');
+    runSequence('copy:sass', 'dev:applystyles', 'dev:generate');
   });
   gulp.watch(['lib/app/js/**/*.js', 'lib/app/views/**/*', 'lib/app/index.html', '!lib/app/js/vendor/**/*.js'], () => {
     gulp.start('lint:js');
@@ -112,7 +128,11 @@ gulp.task('dev', ['dev:doc', 'dev:static', 'dev:applystyles', 'dev:generate'], (
   gulp.watch('lib/styleguide.js', ['dev:generate']);
 });
 
-gulp.task('build', ['sass', 'js:app', 'js:vendor', 'html', 'assets']);
+gulp.task('build:dist', ['copy:sass', 'js:app', 'js:vendor', 'html', 'assets']);
+
+gulp.task('build', ['clean:dist'], () => {
+  runSequence('build:dist');
+});
 
 gulp.task('changelog', () => {
 
@@ -134,4 +154,23 @@ gulp.task('changelog', () => {
 
 });
 
-gulp.task('publish', ['build', 'changelog']);
+gulp.task('friday', function() {
+    var today = new Date();
+    // For fridays only
+    if (today.getDay() !== 5) {
+        return;
+    }
+    gutil.log(gutil.colors.magenta('┓┏┓┏┓┃'));
+    gutil.log(gutil.colors.magenta('┛┗┛┗┛┃'), gutil.colors.cyan('⟍ ○⟋'));
+    gutil.log(gutil.colors.magenta('┓┏┓┏┓┃'), gutil.colors.cyan('  ∕       '), 'Friday');
+    gutil.log(gutil.colors.magenta('┛┗┛┗┛┃'), gutil.colors.cyan('ノ)'));
+    gutil.log(gutil.colors.magenta('┓┏┓┏┓┃'), '          ', 'release,');
+    gutil.log(gutil.colors.magenta('┛┗┛┗┛┃'));
+    gutil.log(gutil.colors.magenta('┓┏┓┏┓┃'), '          ', 'good');
+    gutil.log(gutil.colors.magenta('┛┗┛┗┛┃'));
+    gutil.log(gutil.colors.magenta('┓┏┓┏┓┃'), '          ', 'luck!');
+    gutil.log(gutil.colors.magenta('┃┃┃┃┃┃'));
+    gutil.log(gutil.colors.magenta('┻┻┻┻┻┻'));
+});
+
+gulp.task('publish', ['friday', 'build', 'changelog']);
